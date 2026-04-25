@@ -15,13 +15,8 @@ let defaultSettings = {};
 async function main() {
     document.getElementById("loading").textContent = "Загрузка CheerpJ...";
     
-    // CheerpJ 4.x API
-    await cheerpjInit({
-        status: (msg) => {
-            console.log("[v0] CheerpJ status:", msg);
-            document.getElementById("loading").textContent = msg || "Загрузка...";
-        }
-    });
+    // CheerpJ 3.x API
+    await cheerpjInit();
 
     document.getElementById("loading").textContent = "Загрузка эмулятора...";
     lib = await cheerpjRunLibrary(cheerpjWebRoot+"/freej2me-web.jar");
