@@ -13,14 +13,20 @@ let state = {
 let defaultSettings = {};
 
 async function main() {
-    document.getElementById("loading").textContent = "Loading CheerpJ...";
+    document.getElementById("loading").textContent = "Загрузка CheerpJ...";
+    
+    // CheerpJ 4.x API
     await cheerpjInit({
-        enableDebug: false
+        status: (msg) => {
+            console.log("[v0] CheerpJ status:", msg);
+            document.getElementById("loading").textContent = msg || "Загрузка...";
+        }
     });
 
+    document.getElementById("loading").textContent = "Загрузка эмулятора...";
     lib = await cheerpjRunLibrary(cheerpjWebRoot+"/freej2me-web.jar");
 
-    document.getElementById("loading").textContent = "Loading...";
+    document.getElementById("loading").textContent = "Инициализация...";
 
     launcherUtil = await lib.pl.zb3.freej2me.launcher.LauncherUtil;
 
@@ -569,4 +575,8 @@ async function doExportData() {
     }
 }
 
-main();
+main().catch(err => {
+    console.error("[v0] Error in main:", err);
+    document.getElementById("loading").textContent = "Ошибка загрузки: " + err.message;
+    document.getElementById("loading").style.color = "#ff6b6b";
+});
