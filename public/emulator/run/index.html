@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>J2ME Эмулятор - Игра</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #00d4ff;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0, 212, 255, 0.2);
+            border-top: 4px solid #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loading-text {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        #loading-progress {
+            font-size: 0.9em;
+            color: #a0a0a0;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+
+        #cheerpjDisplay {
+            max-width: 100%;
+            max-height: 100%;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .controls-overlay {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        body:hover .controls-overlay,
+        .controls-overlay:focus-within {
+            opacity: 1;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            color: #00d4ff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: #00d4ff;
+        }
+
+        /* Mobile touch controls */
+        .touch-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: none;
+            padding: 20px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+        }
+
+        .touch-controls.visible {
+            display: block;
+        }
+
+        .touch-dpad {
+            position: absolute;
+            left: 20px;
+            bottom: 80px;
+            width: 150px;
+            height: 150px;
+        }
+
+        .touch-dpad button {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .touch-dpad .up { top: 0; left: 50px; }
+        .touch-dpad .down { bottom: 0; left: 50px; }
+        .touch-dpad .left { top: 50px; left: 0; }
+        .touch-dpad .right { top: 50px; right: 0; }
+        .touch-dpad .center { top: 50px; left: 50px; background: rgba(0, 212, 255, 0.3); }
+
+        .touch-buttons {
+            position: absolute;
+            right: 20px;
+            bottom: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            width: 170px;
+        }
+
+        .touch-buttons button {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .touch-softkeys {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+        }
+
+        .touch-softkeys button {
+            padding: 15px 30px;
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 8px;
+            color: #00d4ff;
+            font-size: 14px;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 200;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        body:hover .back-btn {
+            opacity: 1;
+        }
+
+        .error-screen {
+            position: fixed;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #1a1a2e;
+            color: #ff4757;
+            padding: 20px;
+            text-align: center;
+            z-index: 1001;
+        }
+
+        .error-screen.visible {
+            display: flex;
+        }
+
+        .error-screen h2 {
+            margin-bottom: 15px;
+        }
+
+        .error-screen p {
+            color: #a0a0a0;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+
+        .error-screen a {
+            color: #00d4ff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border: 1px solid #00d4ff;
+            border-radius: 6px;
+        }
+
+        .error-screen a:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loading-text">Загрузка эмулятора...</div>
+        <div id="loading-progress">Инициализация CheerpJ</div>
+    </div>
+
+    <a href=".." class="back-btn">← Назад</a>
+
+    <div id="game-container"></div>
+
+    <div class="touch-controls" id="touch-controls">
+        <div class="touch-dpad">
+            <button class="up" data-key="ArrowUp">↑</button>
+            <button class="down" data-key="ArrowDown">↓</button>
+            <button class="left" data-key="ArrowLeft">←</button>
+            <button class="right" data-key="ArrowRight">→</button>
+            <button class="center" data-key="Enter">OK</button>
+        </div>
+        <div class="touch-buttons">
+            <button data-key="Digit1">1</button>
+            <button data-key="Digit2">2</button>
+            <button data-key="Digit3">3</button>
+            <button data-key="Digit4">4</button>
+            <button data-key="Digit5">5</button>
+            <button data-key="Digit6">6</button>
+            <button data-key="Digit7">7</button>
+            <button data-key="Digit8">8</button>
+            <button data-key="Digit9">9</button>
+            <button data-key="KeyE">*</button>
+            <button data-key="Digit0">0</button>
+            <button data-key="KeyR">#</button>
+        </div>
+        <div class="touch-softkeys">
+            <button data-key="F1">Меню</button>
+            <button data-key="F2">Выбор</button>
+        </div>
+    </div>
+
+    <div class="controls-overlay" id="controls">
+        <button class="control-btn" id="fullscreen-btn">На весь экран</button>
+        <button class="control-btn" id="touch-toggle-btn">Сенсорное управление</button>
+    </div>
+
+    <div class="error-screen" id="error-screen">
+        <h2>Ошибка загрузки игры</h2>
+        <p id="error-message">Не удалось загрузить игру. Проверьте, что игра правильно установлена.</p>
+        <a href="..">Вернуться к списку игр</a>
+    </div>
+
+    <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>
+    <script type="module">
+        const urlParams = new URLSearchParams(window.location.search);
+        const appId = urlParams.get('app');
+        const isMobile = urlParams.get('mobile') === '1' || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            document.getElementById('touch-controls').classList.add('visible');
+        }
+
+        const cheerpjWebRoot = '/app' + location.pathname.replace(/\/run\/?$/, '');
+
+        let lib = null;
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-screen').classList.add('visible');
+        }
+
+        function updateProgress(text) {
+            document.getElementById('loading-progress').textContent = text;
+        }
+
+        async function maybeReadCheerpJFileText(path) {
+            const blob = await cjFileBlob(path);
+            if (blob) {
+                return await blob.text();
+            }
+        }
+
+        function readToKv(txt, kv) {
+            for (const line of txt.trim().split("\n")) {
+                const parts = line.split(/\s*:\s*/);
+                if (parts.length === 2) {
+                    kv[parts[0]] = parts[1];
+                }
+            }
+        }
+
+        async function kvToJava(kv) {
+            const HashMap = await lib.java.util.HashMap;
+            const ret = await new HashMap();
+            for (const k of Object.keys(kv)) {
+                await ret.put(k, kv[k]);
+            }
+            return ret;
+        }
+
+        async function loadSettings(appId) {
+            const settings = {};
+            const appProperties = {};
+            const systemProperties = {};
+
+            for (const [fname, target] of [
+                ["/files/" + appId + "/config/settings.conf", settings],
+                ["/files/" + appId + "/config/appproperties.conf", appProperties],
+                ["/files/" + appId + "/config/systemproperties.conf", systemProperties],
+            ]) {
+                const content = await maybeReadCheerpJFileText(fname);
+                if (content) {
+                    readToKv(content, target);
+                }
+            }
+
+            return { settings, appProperties, systemProperties };
+        }
+
+        async function main() {
+            if (!appId) {
+                showError('Не указан идентификатор игры');
+                return;
+            }
+
+            try {
+                updateProgress('Загрузка CheerpJ...');
+                await cheerpjInit({
+                    enableDebug: false
+                });
+
+                updateProgress('Загрузка эмулятора...');
+                lib = await cheerpjRunLibrary(cheerpjWebRoot + "/freej2me-web.jar");
+
+                updateProgress('Загрузка настроек игры...');
+                const { settings, appProperties, systemProperties } = await loadSettings(appId);
+
+                const jsettings = await kvToJava(settings);
+                const jappProps = await kvToJava(appProperties);
+                const jsysProps = await kvToJava(systemProperties);
+
+                updateProgress('Запуск игры...');
+
+                const File = await lib.java.io.File;
+                const jarFile = await new File("/files/" + appId + "/" + appId + ".jar");
+
+                const MIDletLoader = await lib.org.recompile.mobile.MIDletLoader;
+                const loader = await MIDletLoader.getMIDletLoader(jarFile);
+
+                // Merge properties
+                const loaderProps = loader.properties;
+                const appPropsKeys = Object.keys(appProperties);
+                for (const key of appPropsKeys) {
+                    await loaderProps.put(key, appProperties[key]);
+                }
+
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+
+                // Create display
+                const container = document.getElementById('game-container');
+                cheerpjCreateDisplay(-1, -1, container);
+
+                // Run the MIDlet
+                const Runner = await lib.pl.zb3.freej2me.launcher.Runner;
+                await Runner.run(loader, jsettings, jsysProps);
+
+            } catch (error) {
+                console.error('Error running game:', error);
+                showError('Ошибка запуска: ' + error.message);
+            }
+        }
+
+        // Fullscreen button
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                document.documentElement.requestFullscreen();
+            }
+        });
+
+        // Touch controls toggle
+        document.getElementById('touch-toggle-btn').addEventListener('click', () => {
+            document.getElementById('touch-controls').classList.toggle('visible');
+        });
+
+        // Touch button handlers
+        document.querySelectorAll('[data-key]').forEach(btn => {
+            const keyCode = btn.dataset.key;
+
+            const simulateKey = (type) => {
+                const event = new KeyboardEvent(type, {
+                    key: keyCode,
+                    code: keyCode,
+                    bubbles: true
+                });
+                document.dispatchEvent(event);
+            };
+
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                simulateKey('keydown');
+                btn.style.background = 'rgba(0, 212, 255, 0.5)';
+            });
+
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                simulateKey('keyup');
+                btn.style.background = '';
+            });
+
+            btn.addEventListener('mousedown', () => simulateKey('keydown'));
+            btn.addEventListener('mouseup', () => simulateKey('keyup'));
+        });
+
+        main();
+    </script>
+</body>
+</html>
