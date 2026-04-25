@@ -8,12 +8,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "J2ME Loader - Эмулятор Java ME для Android",
-  description: "Скачайте J2ME Loader - бесплатный эмулятор Java ME для Android. Запускайте классические Java-игры и приложения на современных смартфонах.",
+  title: "J2ME Web Emulator - Эмулятор Java ME в браузере",
+  description: "Запускайте классические Java ME игры и приложения прямо в браузере. Загрузите JAR/JAD файлы и играйте без установки.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2563eb",
+  themeColor: "#1a1a2e",
 };
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" className={`${inter.variable} bg-background`}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased min-h-screen">{children}</body>
     </html>
   );
 }
