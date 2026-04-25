@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>J2ME Эмулятор - Запуск Java игр в браузере</title>
+  </head>
+
+  <body>
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #1a1a2e;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: #e0e0e0;
+      }
+
+      #loading {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        inset: 0;
+        font-size: 1.5em;
+        color: #00d4ff;
+      }
+
+      #loading .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(0, 212, 255, 0.2);
+        border-top: 4px solid #00d4ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+
+      main {
+        margin: auto;
+        width: 100%;
+        max-width: 500px;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      @media (min-width: 600px) {
+        main {
+          max-width: 600px;
+        }
+      }
+
+      :root {
+        --primary: #00d4ff;
+        --primary-dark: #00a8cc;
+        --secondary: #6fc276;
+        --secondary-dark: #50a359;
+        --danger: #ff4757;
+        --danger-dark: #c0392b;
+        --gray-light: #2a2a4a;
+        --gray: #3a3a5a;
+        --gray-dark: #9e9e9e;
+        --text: #e0e0e0;
+        --text-light: #a0a0a0;
+        --border-radius: 8px;
+        --light-color: #252540;
+        --border-color: #3a3a5a;
+        --danger-color: #ff4757;
+        --warning-color: #ffc107;
+        --bg-card: #252540;
+      }
+
+      h1 {
+        color: #00d4ff;
+        font-size: 1.8em;
+        margin: 0;
+      }
+
+      h2 {
+        font-size: 1.2em;
+        margin-bottom: 0.5em;
+        color: #fff;
+      }
+
+      input,
+      button,
+      select {
+        box-sizing: border-box;
+        background-color: var(--gray-light);
+        color: var(--text);
+        border: 1px solid var(--border-color);
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .data-controls {
+        display: flex;
+        gap: 10px;
+      }
+
+      .data-controls .btn {
+        padding: 8px 16px;
+      }
+
+      .game-list {
+        margin-bottom: 20px;
+        background-color: var(--bg-card);
+        overflow: hidden;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+      }
+
+      .game-list-empty {
+        padding: 30px;
+        text-align: center;
+        color: var(--text-light);
+      }
+
+      .game-item {
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .game-item:last-child {
+        border-bottom: none;
+      }
+
+      .game-item a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-decoration: none;
+        color: var(--text);
+        flex-grow: 1;
+        padding: 12px;
+        transition: background-color 0.2s;
+      }
+
+      .game-item a:hover {
+        background-color: var(--gray);
+      }
+
+      .game-item .icon,
+      .preview-icon {
+        width: 40px;
+        height: 40px;
+        margin-right: 12px;
+        border-radius: 8px;
+        background: var(--gray);
+      }
+
+      .game-item .game-info {
+        flex-grow: 1;
+        font-weight: 500;
+      }
+
+      .game-item button {
+        padding: 8px 16px;
+        background-color: var(--gray);
+        border: none;
+        cursor: pointer;
+        color: var(--text);
+        transition: background-color 0.2s;
+      }
+
+      .game-item button:hover {
+        background-color: var(--primary);
+        color: #000;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background-color: var(--primary);
+        color: #000;
+      }
+
+      .btn-primary:hover {
+        background-color: var(--primary-dark);
+      }
+
+      .btn-secondary {
+        background-color: var(--secondary);
+        color: #000;
+      }
+
+      .btn-secondary:hover {
+        background-color: var(--secondary-dark);
+      }
+
+      .btn-danger {
+        background-color: var(--danger);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background-color: var(--danger-dark);
+      }
+
+      .btn-outline {
+        background-color: transparent;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+      }
+
+      .btn-outline:hover {
+        background-color: var(--primary);
+        color: #000;
+      }
+
+      .save-button {
+        display: block;
+        width: 100%;
+        font-size: 1.1em;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        color: #000;
+        font-weight: 600;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .save-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+      }
+
+      .save-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-full {
+        display: block;
+        padding: 10px 16px;
+        width: 100%;
+      }
+
+      .add-edit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2em;
+        margin-bottom: 1em;
+      }
+
+      .add-edit-header h2 {
+        margin: 0;
+      }
+
+      .warning-message {
+        background-color: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        padding: 12px;
+        border-radius: var(--border-radius);
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+      }
+
+      .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        color: var(--primary);
+      }
+
+      .spinner {
+        border: 3px solid rgba(0, 212, 255, 0.2);
+        border-radius: 50%;
+        border-top: 3px solid var(--primary);
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+        margin-right: 12px;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        font-size: 0.9em;
+        color: var(--text-light);
+      }
+
+      input[type="file"] {
+        width: 100%;
+        padding: 12px;
+        border: 2px dashed var(--border-color);
+        border-radius: 8px;
+        font-size: 0.95em;
+        box-sizing: border-box;
+        background: var(--gray-light);
+        color: var(--text);
+        cursor: pointer;
+        transition: border-color 0.2s;
+      }
+
+      input[type="file"]:hover {
+        border-color: var(--primary);
+      }
+
+      .settings-container select,
+      .settings-container input[type="number"],
+      .settings-container textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        box-sizing: border-box;
+        background: var(--gray-light);
+        color: var(--text);
+      }
+
+      .settings-container select:focus,
+      .settings-container input:focus,
+      .settings-container textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+
+      .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      @media (max-width: 500px) {
+        .settings-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .settings-grid *:nth-child(2n + 1):last-child {
+        grid-column: 1 / -1;
+      }
+
+      .settings-grid label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+
+      .settings-grid label.checkbox {
+        font-weight: normal;
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background: var(--gray-light);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .settings-grid label.checkbox:hover {
+        background: var(--gray);
+      }
+
+      .settings-grid .checkbox input[type="checkbox"] {
+        margin-right: 10px;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary);
+      }
+
+      .custom-size-inputs {
+        margin-top: 8px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .custom-size-inputs input {
+        width: 100px !important;
+      }
+
+      textarea {
+        height: 80px;
+        resize: vertical;
+      }
+
+      .preview-container {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 20px;
+        background-color: var(--bg-card);
+      }
+
+      .preview-container .game-name {
+        font-size: 1.1em;
+        margin: 0 10px;
+        font-weight: 600;
+      }
+
+      .manage-controls {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+      }
+
+      .control-button {
+        padding: 8px 12px;
+        font-size: 0.85em;
+        line-height: 1;
+        border-radius: 6px;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+      }
+
+      .danger-button {
+        background-color: var(--danger-color);
+        color: white;
+      }
+
+      .danger-button:hover {
+        background-color: #ff6b7a;
+      }
+
+      .warning-button {
+        background-color: var(--warning-color);
+        color: #000;
+      }
+
+      .warning-button:hover {
+        background-color: #ffcd39;
+      }
+
+      .advanced-settings {
+        margin-top: 1.5em;
+        background: var(--bg-card);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+      }
+
+      .advanced-settings summary {
+        padding: 12px 15px;
+        cursor: pointer;
+        color: var(--text-light);
+      }
+
+      .advanced-settings summary:hover {
+        color: var(--text);
+      }
+
+      .advanced-settings[open] summary {
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .advanced-settings > div {
+        padding: 15px;
+      }
+
+      summary h3 {
+        display: inline;
+        font-size: 0.95em;
+      }
+
+      .aux-file-upload {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 15px;
+      }
+
+      .aux-file-upload-btn {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        text-align: center;
+        background-color: var(--gray-light);
+        border: 1px dashed var(--border-color);
+        border-radius: 6px;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: all 0.2s;
+        box-sizing: border-box;
+      }
+
+      .aux-file-upload:hover .aux-file-upload-btn {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .aux-file-upload input[type="file"] {
+        opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+
+      .keyboard-controls {
+        background: var(--bg-card);
+        padding: 15px;
+        border-radius: 12px;
+        margin-top: 25px;
+        border: 1px solid var(--border-color);
+      }
+
+      .keyboard-controls h3 {
+        margin: 0 0 15px 0;
+        font-size: 1em;
+        color: var(--primary);
+      }
+
+      .keyboard-controls table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .keyboard-controls table td {
+        padding: 8px 5px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .keyboard-controls table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .keyboard-controls table td:first-child {
+        width: 40%;
+      }
+
+      .keyboard-controls .key {
+        background-color: var(--gray);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-family: monospace;
+        font-size: 12px;
+        color: var(--primary);
+      }
+
+      .footer {
+        text-align: center;
+        padding: 20px;
+        color: var(--text-light);
+        font-size: 0.85em;
+      }
+
+      .footer a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+    <div id="loading">
+      <div class="spinner"></div>
+      <span>Загрузка CheerpJ...</span>
+    </div>
+    <main id="main" style="display: none">
+      <div class="header">
+        <h1>J2ME Эмулятор</h1>
+        <div class="data-controls">
+          <button class="btn btn-outline" id="import-data-btn">
+            Импорт
+          </button>
+          <input
+            type="file"
+            id="import-data-file"
+            style="display: none"
+            accept=".zip"
+          />
+          <button class="btn btn-outline" id="export-data-btn">
+            Экспорт
+          </button>
+          <a
+            id="export-data-link"
+            style="display: none"
+            download="freej2me-data.zip"
+            >x</a
+          >
+        </div>
+      </div>
+      <h2>Установленные игры</h2>
+      <div id="game-list" class="game-list">
+        <div class="game-list-empty">
+          Нет установленных игр. Добавьте JAR файл ниже.
+        </div>
+      </div>
+      <div class="add-edit-header">
+        <h2 id="add-edit-text">Добавить новую игру</h2>
+        <button id="clear-current" class="btn btn-outline">Очистить</button>
+      </div>
+      <div id="file-input-step">
+        <div class="form-group">
+          <label for="game-file-input">Выберите JAR файл</label>
+          <input type="file" id="game-file-input" accept=".jar" />
+        </div>
+      </div>
+      <div id="file-input-jad-step" style="display: none">
+        <div id="warning-message" class="warning-message">
+          <span>⚠️</span>
+          <span>Эта игра требует JAD файл для корректной работы. Пожалуйста, загрузите его.</span>
+        </div>
+        <div class="form-group">
+          <label for="upload-descriptor-file-input">Выберите JAD файл</label>
+          <input type="file" id="upload-descriptor-file-input" accept=".jad" />
+        </div>
+        <div class="form-group">
+          <button id="continue-without-jad" class="btn btn-outline btn-full">
+            Продолжить без JAD файла (может не работать)
+          </button>
+        </div>
+      </div>
+      <div class="loading" id="file-input-loading" style="display: none">
+        <div class="spinner"></div>
+        <span>Анализ файла...</span>
+      </div>
+      <div id="add-manage-step" style="display: none">
+        <div id="preview" class="preview-container">
+          <img class="preview-icon" />
+          <span class="preview-name">Название игры</span>
+          <div id="preview-controls" class="manage-controls">
+            <button
+              id="wipe-data-btn"
+              class="control-button warning-button"
+              title="Очистить данные игры"
+            >
+              Очистить данные
+            </button>
+            <button
+              id="uninstall-btn"
+              class="control-button danger-button"
+              title="Удалить игру"
+            >
+              Удалить
+            </button>
+          </div>
+        </div>
+        <div id="edit-settings-container" class="settings-container">
+          <div class="aux-file-upload">
+            <div class="aux-file-upload-btn">
+              Загрузить дополнительный JAD файл (опционально)
+            </div>
+            <input type="file" id="aux-jad-file-input" accept=".jad" />
+          </div>
+          <div class="settings-grid">
+            <div class="form-group">
+              <label for="phoneType">Тип телефона:</label>
+              <select id="phoneType">
+                <option value="Standard">Стандартный</option>
+                <option value="Nokia">Nokia</option>
+                <option value="Motorola">Motorola</option>
+                <option value="Siemens">Siemens</option>
+                <option value="SonyEricsson">Sony Ericsson</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="screenSize">Размер экрана:</label>
+              <select id="screenSize">
+                <option value="96x65">96x65</option>
+                <option value="96x96">96x96</option>
+                <option value="104x80">104x80</option>
+                <option value="128x128">128x128</option>
+                <option value="132x176">132x176</option>
+                <option value="128x160">128x160</option>
+                <option value="176x208">176x208</option>
+                <option value="176x220">176x220</option>
+                <option value="208x208">208x208</option>
+                <option value="240x320">240x320</option>
+                <option value="320x240">320x240</option>
+                <option value="240x400">240x400</option>
+                <option value="352x416">352x416</option>
+                <option value="360x640">360x640</option>
+                <option value="640x360">640x360</option>
+                <option value="480x800">480x800</option>
+                <option value="800x480">800x480</option>
+                <option value="custom">Другой</option>
+              </select>
+              <div class="custom-size-inputs" id="edit-custom-size-inputs">
+                <input
+                  type="number"
+                  placeholder="Ширина"
+                  id="customWidth"
+                  min="1"
+                />
+                <input
+                  type="number"
+                  placeholder="Высота"
+                  id="customHeight"
+                  min="1"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="fontSize">Размер шрифта:</label>
+              <select id="fontSize">
+                <option value="0">Динамический</option>
+                <option value="1">Маленький</option>
+                <option value="2">Средний</option>
+                <option value="3">Большой</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="dgFormat">Формат DirectGraphics:</label>
+              <select id="dgFormat">
+                <option value="444">444 RGB</option>
+                <option value="4444">4444 ARGB</option>
+                <option value="565">565 ARGB</option>
+                <option value="888">888 ARGB</option>
+                <option value="8888">8888 ARGB</option>
+              </select>
+            </div>
+            <label class="checkbox">
+              <input type="checkbox" name="enableSound" /> Включить звук
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="rotate" /> Повернуть экран
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="forceFullscreen" /> Принудительно на весь экран
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="textureDisableFilter" /> Отключить фильтрацию текстур
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" name="queuedPaint" /> Очередь отрисовки (если игра зависает)
+            </label>
+          </div>
+          <details class="advanced-settings">
+            <summary>
+              <h3>Расширенные настройки</h3>
+            </summary>
+            <div>
+              <div class="form-group">
+                <label for="editAppProps">Дополнительные свойства приложения:</label>
+                <textarea
+                  id="editAppProps"
+                  placeholder="например: ключ: значение, по одному на строку"
+                ></textarea>
+              </div>
+              <div class="form-group">
+                <label for="editSysProps">Дополнительные системные свойства:</label>
+                <textarea
+                  id="editSysProps"
+                  placeholder="например: ключ: значение, по одному на строку"
+                ></textarea>
+              </div>
+            </div>
+          </details>
+        </div>
+        <button class="save-button" id="add-save-button">Добавить игру</button>
+      </div>
+      <div class="keyboard-controls">
+        <h3>Управление с клавиатуры</h3>
+        <table>
+          <tr>
+            <td><span class="key">Esc</span></td>
+            <td>Открыть/закрыть настройки freej2me</td>
+          </tr>
+          <tr>
+            <td><span class="key">F1</span> или <span class="key">Q</span></td>
+            <td>Левая софт-клавиша</td>
+          </tr>
+          <tr>
+            <td><span class="key">F2</span> или <span class="key">W</span></td>
+            <td>Правая софт-клавиша</td>
+          </tr>
+          <tr>
+            <td><span class="key">0</span> - <span class="key">9</span></td>
+            <td>Цифровые клавиши</td>
+          </tr>
+          <tr>
+            <td>Numpad</td>
+            <td>Цифры (123 и 789 поменяны местами)</td>
+          </tr>
+          <tr>
+            <td><span class="key">E</span></td>
+            <td>Клавиша *</td>
+          </tr>
+          <tr>
+            <td><span class="key">R</span></td>
+            <td>Клавиша #</td>
+          </tr>
+          <tr>
+            <td><span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span></td>
+            <td>Навигация</td>
+          </tr>
+          <tr>
+            <td><span class="key">Enter</span></td>
+            <td>Кнопка OK / Действие</td>
+          </tr>
+        </table>
+      </div>
+      <div class="footer">
+        <p>Работает на базе <a href="https://github.com/nicorobs/freej2me-web" target="_blank">FreeJ2ME</a> и <a href="https://cheerpj.com/" target="_blank">CheerpJ</a></p>
+      </div>
+    </main>
+    <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>
+    <script type="module" src="/emulator/src/launcher.js"></script>
+  </body>
+</html>
