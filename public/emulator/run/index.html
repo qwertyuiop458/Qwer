@@ -257,7 +257,7 @@
         <div id="loading-progress">Инициализация CheerpJ</div>
     </div>
 
-    <a href=".." class="back-btn">← Назад</a>
+    <a href="/" class="back-btn">← Назад</a>
 
     <div id="game-container"></div>
 
@@ -297,7 +297,7 @@
     <div class="error-screen" id="error-screen">
         <h2>Ошибка загрузки игры</h2>
         <p id="error-message">Не удалось загрузить игру. Проверьте, что игра правильно установлена.</p>
-        <a href="..">Вернуться к списку игр</a>
+        <a href="/">Вернуться к списку игр</a>
     </div>
 
     <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>
@@ -310,7 +310,7 @@
             document.getElementById('touch-controls').classList.add('visible');
         }
 
-        const cheerpjWebRoot = '/app' + location.pathname.replace(/\/run\/?$/, '');
+        const cheerpjWebRoot = '/app/emulator';
 
         let lib = null;
 

@@ -1,5 +1,5 @@
 // note that we can only call java stuff if thread not running..
-const cheerpjWebRoot = '/app'+location.pathname.replace(/\/$/,'');
+const cheerpjWebRoot = '/app/emulator';
 
 const emptyIcon = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
 
@@ -102,7 +102,7 @@ async function loadGames() {
 
     let installedAppsBlob = await cjFileBlob("/files/apps.list");
     if (!installedAppsBlob) {
-        const res = await fetch("init.zip");
+        const res = await fetch("/emulator/init.zip");
         const ab = await res.arrayBuffer();
         await launcherUtil.importData(new Int8Array(ab));
 
@@ -160,10 +160,10 @@ function fillGamesList(games) {
         item.className = "game-item";
 
         const link = document.createElement("a");
-        link.href = "run?app=" + game.appId;
+        link.href = "/emulator/run/?app=" + game.appId;
         link.addEventListener('pointerdown', e => {
             if (e.pointerType === 'touch') {
-                link.href = "run?app=" + game.appId + "&mobile=1";
+                link.href = "/emulator/run/?app=" + game.appId + "&mobile=1";
             }
         });
 
@@ -180,7 +180,7 @@ function fillGamesList(games) {
         item.appendChild(link);
 
         const manageButton = document.createElement("button");
-        manageButton.textContent = "Manage";
+        manageButton.textContent = "Настроить";
         manageButton.onclick = () => openEditGame(game);
         item.appendChild(manageButton);
 
@@ -199,7 +199,7 @@ function setupAddMode() {
         systemProperties: {},
     };
 
-    document.getElementById("add-edit-text").textContent = "Add new game";
+    document.getElementById("add-edit-text").textContent = "Добавить новую игру";
 
     document.getElementById("file-input-step").style.display = "";
     document.getElementById("file-input-loading").style.display = "none";
@@ -334,7 +334,7 @@ async function setupAddManageGame(app, isAdding) {
     if (!isAdding) {
         document.getElementById("uninstall-btn").disabled = false;
         document.getElementById("uninstall-btn").onclick = (e) => {
-            if (!confirm("Do you want to uninstall " + app.name + "?")) {
+            if (!confirm("Вы хотите удалить " + app.name + "?")) {
                 return;
             }
 
@@ -344,7 +344,7 @@ async function setupAddManageGame(app, isAdding) {
 
         document.getElementById("wipe-data-btn").disabled = false;
         document.getElementById("wipe-data-btn").onclick = (e) => {
-            if (!confirm("Do you want wipe " + app.name + " rms storage?")) {
+            if (!confirm("Вы хотите очистить данные " + app.name + "?")) {
                 return;
             }
 
@@ -400,7 +400,7 @@ async function setupAddManageGame(app, isAdding) {
         .join("\n");
 
     document.getElementById("add-save-button").disabled = false;
-    document.getElementById("add-save-button").textContent = isAdding ? "Add game" : "Save game";
+    document.getElementById("add-save-button").textContent = isAdding ? "Добавить игру" : "Сохранить";
     document.getElementById("add-save-button").onclick = doAddSaveGame;
 }
 
@@ -497,14 +497,14 @@ function openEditGame(gameObj) {
         return;
     }
     state.currentGame = gameObj;
-    document.getElementById("add-edit-text").textContent = "Edit game";
+    document.getElementById("add-edit-text").textContent = "Редактировать игру";
 
     setupAddManageGame(gameObj, false);
 }
 
 function confirmDiscard() {
     if (state.currentGame != null && (state.currentGame.jarFile || state.currentGame.appId)) {
-        if (!confirm("Discard changes?")) {
+        if (!confirm("Отменить изменения?")) {
             return false;
         }
     }
@@ -565,7 +565,7 @@ async function doExportData() {
         setTimeout(() => URL.revokeObjectURL(objectURL), 1000);
     } catch (error) {
         console.error("Error exporting data:", error);
-        alert("Error exporting data");
+        alert("Ошибка экспорта данных");
     }
 }
 
