@@ -1,25 +1,43 @@
-import { Zap, Shield, Users } from "lucide-react";
+import { Smartphone, Settings, Zap, Maximize, Save, Github } from "lucide-react"
 
 const features = [
   {
+    icon: Smartphone,
+    title: "Поддержка JAR и JAD",
+    description:
+      "Запускайте Java-приложения в форматах JAR и JAD без дополнительной конвертации.",
+  },
+  {
+    icon: Settings,
+    title: "Гибкие настройки",
+    description:
+      "Настраивайте виртуальную клавиатуру, разрешение экрана и другие параметры эмуляции.",
+  },
+  {
     icon: Zap,
-    title: "Быстрая разработка",
+    title: "Высокая производительность",
     description:
-      "Используем современные технологии для быстрой реализации ваших идей без потери качества.",
+      "Оптимизированный движок обеспечивает плавную работу даже на слабых устройствах.",
   },
   {
-    icon: Shield,
-    title: "Надёжность",
+    icon: Maximize,
+    title: "Масштабирование экрана",
     description:
-      "Гарантируем безопасность и стабильную работу всех наших решений.",
+      "Автоматическое масштабирование изображения под размер экрана вашего устройства.",
   },
   {
-    icon: Users,
-    title: "Поддержка 24/7",
+    icon: Save,
+    title: "Сохранение прогресса",
     description:
-      "Наша команда всегда готова помочь и ответить на любые ваши вопросы.",
+      "Сохраняйте игровой прогресс и продолжайте с того места, где остановились.",
   },
-];
+  {
+    icon: Github,
+    title: "Открытый исходный код",
+    description:
+      "Полностью бесплатное приложение с открытым исходным кодом без рекламы.",
+  },
+]
 
 export function Features() {
   return (
@@ -27,13 +45,13 @@ export function Features() {
       <div className="mx-auto max-w-6xl">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-foreground md:text-4xl">
-            Наши преимущества
+            Возможности
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Почему клиенты выбирают нас для реализации своих проектов
+            J2ME Loader предоставляет все необходимые инструменты для запуска классических Java-игр
           </p>
         </div>
-        <div className="mt-16 grid gap-8 md:grid-cols-3">
+        <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => (
             <div
               key={feature.title}
@@ -51,5 +69,5 @@ export function Features() {
         </div>
       </div>
     </section>
-  );
+  )
 }

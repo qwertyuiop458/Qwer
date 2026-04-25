@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Добро пожаловать",
-  description: "Современная веб-страница с русским интерфейсом",
+  title: "J2ME Loader - Эмулятор Java ME для Android",
+  description: "Скачайте J2ME Loader - бесплатный эмулятор Java ME для Android. Запускайте классические Java-игры и приложения на современных смартфонах.",
 };
 
 export const viewport: Viewport = {
